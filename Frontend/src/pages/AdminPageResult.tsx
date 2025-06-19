@@ -123,7 +123,7 @@ const AdminResultsPage = () => {
                   {filtered.length} song{filtered.length !== 1 ? "s" : ""} found
                 </p>
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                  {filtered.map((song, index) => (
+                  {filtered.map((song) => (
                     <div
                       key={song.title}
                       className="group relative overflow-hidden"
