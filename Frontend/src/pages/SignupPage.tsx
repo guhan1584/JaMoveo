@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -32,7 +31,7 @@ const SignupPage = () => {
     admin: isAdmin,
   });
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,13 +45,14 @@ const SignupPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrors([]);
     setIsLoading(true);
 
     const validation = signupSchema.safeParse(form);
 
     if (!validation.success) {
-      setError(validation.error.message);
+      const messages = validation.error.errors.map((err) => err.message);
+      setErrors(messages);
       setIsLoading(false);
       return;
     }
@@ -64,15 +64,11 @@ const SignupPage = () => {
       );
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      if (isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/user");
-      }
+      navigate(isAdmin ? "/admin" : "/user");
     } catch (err: any) {
       const message =
         err?.response?.data?.message || "Signup failed. Try again.";
-      setError(typeof message === "string" ? message : "Invalid input.");
+      setErrors([typeof message === "string" ? message : "Invalid input."]);
     } finally {
       setIsLoading(false);
     }
@@ -80,13 +76,13 @@ const SignupPage = () => {
 
   return (
     <div className="min-h-screen w-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-x-hidden">
-      {/* Background decoration - Responsive */}
+      {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-1000"></div>
       </div>
 
-      {/* Back Button - Fixed Position */}
+      {/* Back Button */}
       <Button
         variant="ghost"
         size="sm"
@@ -126,7 +122,7 @@ const SignupPage = () => {
         <CardContent className="p-6 md:p-8 pt-0">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
-              {/* Username Field */}
+              {/* Username */}
               <div className="space-y-2">
                 <Label
                   htmlFor="username"
@@ -145,7 +141,7 @@ const SignupPage = () => {
                 />
               </div>
 
-              {/* Password Field */}
+              {/* Password */}
               <div className="space-y-2">
                 <Label
                   htmlFor="password"
@@ -180,7 +176,7 @@ const SignupPage = () => {
                 </div>
               </div>
 
-              {/* Instrument Select */}
+              {/* Instrument */}
               <div className="space-y-2">
                 <Label className="text-white/80 font-medium text-sm">
                   Your Instrument
@@ -189,7 +185,7 @@ const SignupPage = () => {
                   value={form.instrument}
                   onValueChange={handleInstrumentChange}
                 >
-                  <SelectTrigger className="bg-gradient-to-br from-slate-800/40 to-gray-900/30 border-slate-600/50 focus:border-white/40 focus:ring-white/20 focus:bg-gradient-to-br focus:from-slate-700/50 focus:to-gray-800/40 h-12 rounded-xl transition-all duration-200">
+                  <SelectTrigger className="bg-gradient-to-br from-slate-800/40 to-gray-900/30 border-slate-600/50 focus:border-white/40 focus:ring-white/20 h-12 rounded-xl transition-all duration-200">
                     <SelectValue
                       placeholder="Select your instrument"
                       className="text-white font-medium data-[placeholder]:text-white/60"
@@ -222,10 +218,14 @@ const SignupPage = () => {
               </div>
             </div>
 
-            {/* Error Message */}
-            {error && (
+            {/* Error messages */}
+            {errors.length > 0 && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                <p className="text-red-300 text-sm text-center">{error}</p>
+                <ul className="text-red-300 text-sm list-disc pl-5 space-y-1">
+                  {errors.map((msg, idx) => (
+                    <li key={idx}>{msg}</li>
+                  ))}
+                </ul>
               </div>
             )}
 

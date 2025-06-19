@@ -11,11 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Music, LogIn, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import api from "@/config/axios";
 import { loginSchema } from "@/validations/auth.schema";
+import type { ZodIssue } from "zod";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,20 +25,21 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async () => {
-    setError("");
+    setErrors([]);
     setIsLoading(true);
 
     const validation = loginSchema.safeParse(form);
 
     if (!validation.success) {
-      setError(validation.error.message);
+      const issues: ZodIssue[] = validation.error.issues;
+      const messages = issues.map((issue) => issue.message);
+      setErrors(messages);
       setIsLoading(false);
       return;
     }
 
     try {
       const res = await api.post("/auth/login", form);
-
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
@@ -48,9 +50,9 @@ const LoginPage = () => {
       }
     } catch (err: any) {
       if (err.response?.data?.message) {
-        setError(err.response.data.message);
+        setErrors([err.response.data.message]);
       } else {
-        setError("An unexpected error occurred.");
+        setErrors(["An unexpected error occurred."]);
       }
     } finally {
       setIsLoading(false);
@@ -59,7 +61,6 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen w-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4 relative overflow-x-hidden">
-      {/* Background decoration - Contained */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-1000"></div>
@@ -74,6 +75,7 @@ const LoginPage = () => {
         <ArrowLeft className="w-4 h-4 mr-1" />
         <span className="hidden sm:inline">Back</span>
       </Button>
+
       <Card className="w-full max-w-md relative z-10 bg-white/5 backdrop-blur-xl border-white/10 shadow-2xl">
         <CardHeader className="text-center pb-6">
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center mb-4 shadow-lg">
@@ -130,9 +132,13 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-              <p className="text-red-400 text-sm text-center">{error}</p>
+          {errors.length > 0 && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+              <ul className="list-disc list-inside text-red-300 text-sm space-y-1">
+                {errors.map((err, idx) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
             </div>
           )}
 
