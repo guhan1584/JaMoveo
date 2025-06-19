@@ -24,11 +24,17 @@ export const getSongHandler = async (req: AuthRequest, res: Response) => {
     const veechSheloContent = JSON.parse(veechSheloRaw) as SongLine[];
 
     const songs: Song[] = [
-      { title: "Hey Jude", author: "The Beatles", content: heyJudeContent },
+      {
+        title: "Hey Jude",
+        author: "The Beatles",
+        content: heyJudeContent,
+        language: "en",
+      },
       {
         title: "ואיך שלא",
         author: "אריאל זילבר",
         content: veechSheloContent,
+        language: "he",
       },
     ];
 

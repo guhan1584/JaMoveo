@@ -24,6 +24,7 @@ const LivePage = () => {
   const [song, setSong] = useState<Song | null>(location.state?.song || null);
   const socket = useMemo(() => connectSocket(), []);
   const userRole = useUserRole();
+  const textDirection = song?.language === "he" ? "rtl" : "ltr";
 
   const { scrolling, setScrolling, visibleLines, setVisibleLines, contentRef } =
     useScrolling({ userRole, song });
@@ -164,7 +165,12 @@ const LivePage = () => {
               minHeight: "calc(75vh - 100px)",
             }}
           >
-            <div className="space-y-8 p-4 mb-10">
+            <div
+              className={`space-y-8 p-4 mb-10 ${
+                song?.language === "he" ? "text-right" : "text-left"
+              }`}
+              dir={textDirection}
+            >
               {song?.content.slice(0, visibleLines).map((line, lineIndex) => (
                 <div
                   key={lineIndex}
@@ -215,7 +221,7 @@ const LivePage = () => {
       </div>
 
       {userRole.isAdmin && (
-        <div className="fixed bottom-8 right-8 z-50">
+        <div className="fixed bottom-3 right-4 z-50">
           <button
             onClick={() => setScrolling((prev) => !prev)}
             className={`w-16 h-16 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center ${

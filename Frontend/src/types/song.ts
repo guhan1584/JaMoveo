@@ -9,4 +9,5 @@ export interface Song {
   title: string;
   author?: string;
   content: SongLine[];
+  language: "en" | "he";
 }
